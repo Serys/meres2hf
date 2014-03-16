@@ -48,7 +48,7 @@
 
 		;***** Konstansok *****
 
-.equ	tconst	= 25			; idõzítési konstans (T = 25*10 msec)
+.equ	tconst	= 99			; idõzítési konstans (T = 100*10 msec = 1s)
 
 		;***** Regiszterkiosztás ***** 
 
@@ -128,20 +128,23 @@ main:	ldi		temp,LOW(RAMEND)	; RAMEND = RAM végcíme
 
 ;***** Timer 0 inicializálása *****
 
-		ldi		temp,0b00001111
-				;	   0.......		; FOC=0
-				;	   .0..1...		; WGM=10 (CTC mod)
-				;	   ..00....		; COM=00 (kimenet tiltva)
-				;	   .....111		; CS0=111 (CLK/1024)
-		out		TCCR0,temp			; Timer 0 TCCR0 regiszter
-		ldi		temp,108			; 11059200Hz/1024 = 108*100
-		out		OCR0,temp			; Timer 0 OCR0 regiszter
-		ldi		temp,0b00000010
-				;	   000000..		; Timer2,1 IT tiltva
-				;	   ......1.		; OCIE0=1
-				;	   .......0		; TOIE0=0
-		out		TIMSK,temp			; Timer IT Mask regiszter
-		sei							; globális IT engedélyezve
+		ldi temp, 107 				; komparálandó érték (0?107 = 108) 
+
+		out OCR0, temp 
+
+		ldi temp, 0b00001111 		; TCCR0: CTC mód, 1024-es el?osztó 
+				;   0.00.... 		; FOC=0 COM=00 (kimenet tiltva) 
+				;   .0..1... 		; WGM=10 (CTC mód) 
+				;   .....111 		; CS0=111 (CLK/1024) 
+		ldi temp, (1<<WGM01)|(0b111<<CS00) ; el?z? bitminta ?hibat?r?bben? 
+		out TCCR0, temp 
+
+		ldi temp, 0b00000010 		; TIMSK: Output Compare Match IT engedélyezés 
+				;   ......1.		; OCIE0=1: ha TCNT0 == OCR0, akkor IT 
+				;   .......0 		; TOIE0=0 (nincs IT túlcsordulás esetén) 
+		ldi temp, (1<<OCIE0) 		; el?z? bitminta másképp 
+		out TIMSK, temp 
+		sei 
 
 ;*****************************************************************************
 
@@ -163,35 +166,27 @@ loop:	lds		sstate,PING			; kapcsolók állaptának beolv.
 
 	.cseg
 
-t0it:	push	temp					; segédregiszter mentése
-		in		temp,SREG			; státusz mentése
-		push	temp
+t0it:	
+	push	temp				; segédregiszter mentése
+	in		temp,SREG			; státusz mentése
+	push	temp
 
-		lds		temp,count			; Timer számláló
-		dec		temp				; csökkentése
-		sts		count,temp			; és tárolása
-		brne	t0ite				; ugrás, ha nem járt le
-		ldi		temp,tconst			; számláló visszaállítása
-		sts		count,temp
+	lds		temp,count			; Timer számláló
+	dec		temp				; csökkentése
+	sts		count,temp			; és tárolása
+	brne	t0it_end			; ugrás, ha nem járt le
+	ldi		temp,tconst			; számláló visszaállítása
+	sts		count,temp
 
-		in		temp,PORTC			; LED állapot beolvasása
-		clc
-		sbrs	sstate,3			; SW3 aktív ?
-		jmp		t0it0				; ugrás, ha igen
-		rol		temp				; SW3=0: LED-ek léptetése elõre
-		brcs	t0it1
-		sbr		temp,1
-		jmp		t0it1
-t0it0:	ror		temp				; SW3=1: LED-ek léptetése vissza
-		brcs	t0it1
-		sbr		temp,128
-t0it1:	out		PORTC,temp			; LED-ek beállítása
+	//TODO vezerles
 
-t0ite:	pop		temp				; regiszterek visszaállítása
-		out		SREG,temp
-		pop		temp
-dummy:	reti
+t0it_end:
+	pop		temp				; regiszterek visszaállítása
+	out		SREG,temp
+	pop		temp
+
+dummy:	
+	reti
 
 ;*****************************************************************************
-
 .include "led.asm"
