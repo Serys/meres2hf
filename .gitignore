@@ -1,2 +1,7 @@
 .DS_Store
 *.bat
+*.hex
+*.map
+*.obj
+*.tmp
+*.temp
