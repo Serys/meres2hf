@@ -193,3 +193,5 @@ t0ite:	pop		temp				; regiszterek visszaállítása
 dummy:	reti
 
 ;*****************************************************************************
+
+.include led.asm
