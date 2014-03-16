@@ -154,7 +154,7 @@ loop:	lds		sstate,PING			; kapcsolók állaptának beolv.
 		jmp		loop				; végtelen hurok  
 
 ;*****************************************************************************
-;* 10 msec Timer IT rutin
+;* 1s Timer IT rutin
 ;*****************************************************************************
 
 
