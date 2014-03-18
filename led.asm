@@ -43,26 +43,10 @@ SET_GYALOGOS_ZOLD:
 ret	
 ;*************************
 
-SET_GYALOGOS_SARGA:
-	in	temp, PORTC 		; Port betoltese
-	ori	temp,  0b01000000	; Led bekapcsolasa
-	andi temp, 0b01001111	;
-	out PORTC, temp			; Portra iras
-ret
-;*************************
-
 SET_GYALOGOS_PIROS:
 	in	temp, PORTC 		; Port betoltese
 	ori	temp,  0b00100000	; Led bekapcsolasa
 	andi temp, 0b00101111	;
-	out PORTC, temp			; Portra iras
-ret
-;*************************
-
-SET_GYALOGOS_PIROS_SARGA:
-	in	temp, PORTC 		; Port betoltese
-	ori	temp,  0b01100110	; Led bekapcsolasa
-	andi temp, 0b01101111	;
 	out PORTC, temp			; Portra iras
 ret
 ;*************************
